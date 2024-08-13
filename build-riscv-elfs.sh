@@ -3,13 +3,13 @@
 # You may need to change them to your installed directory before running this
 
 echo "Building RISC-V ELFs..."
-/opt/riscv/bin/riscv64-unknown-elf-gcc -march=rv64i test/helloworld.c test/lib.c -o riscv-elf/helloworld.riscv
-/opt/riscv/bin/riscv64-unknown-elf-gcc -march=rv64i test/test_arithmetic.c test/lib.c -o riscv-elf/test_arithmetic.riscv
-/opt/riscv/bin/riscv64-unknown-elf-gcc -march=rv64i test/test_syscall.c test/lib.c -o riscv-elf/test_syscall.riscv
-/opt/riscv/bin/riscv64-unknown-elf-gcc -march=rv64i test/test_branch.c test/lib.c -o riscv-elf/test_branch.riscv
-/opt/riscv/bin/riscv64-unknown-elf-gcc -march=rv64i test/quicksort.c test/lib.c -o riscv-elf/quicksort.riscv
-/opt/riscv/bin/riscv64-unknown-elf-gcc -march=rv64i test/matrixmulti.c test/lib.c -o riscv-elf/matrixmulti.riscv
-/opt/riscv/bin/riscv64-unknown-elf-gcc -march=rv64i test/ackermann.c test/lib.c -o riscv-elf/ackermann.riscv
+/opt/riscv/bin/riscv64-unknown-elf-gcc -march=rv64imf test/helloworld.c test/lib.c -o riscv-elf/helloworld.riscv
+/opt/riscv/bin/riscv64-unknown-elf-gcc -march=rv64imf test/test_arithmetic.c test/lib.c -o riscv-elf/test_arithmetic.riscv
+/opt/riscv/bin/riscv64-unknown-elf-gcc -march=rv64imf test/test_syscall.c test/lib.c -o riscv-elf/test_syscall.riscv
+/opt/riscv/bin/riscv64-unknown-elf-gcc -march=rv64imf test/test_branch.c test/lib.c -o riscv-elf/test_branch.riscv
+/opt/riscv/bin/riscv64-unknown-elf-gcc -march=rv64imf test/quicksort.c test/lib.c -o riscv-elf/quicksort.riscv
+/opt/riscv/bin/riscv64-unknown-elf-gcc -march=rv64imf test/matrixmulti.c test/lib.c -o riscv-elf/matrixmulti.riscv
+/opt/riscv/bin/riscv64-unknown-elf-gcc -march=rv64imf test/ackermann.c test/lib.c -o riscv-elf/ackermann.riscv
 
 echo "Automatically dumping ELFs for reference"
 cd riscv-elf
