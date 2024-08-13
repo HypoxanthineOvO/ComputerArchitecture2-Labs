@@ -12,4 +12,6 @@ long long read_num();
 
 void print_f(float num);
 
+float sqrt_f(float x);
+
 #endif

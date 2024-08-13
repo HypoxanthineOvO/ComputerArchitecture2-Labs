@@ -14,5 +14,7 @@ int main() {
     x = d / c;
     print_f(x);
     print_c('\n');
+
     exit_proc();
+
 }

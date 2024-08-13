@@ -3,6 +3,7 @@
  */
 
 #include "lib.h"
+#include <math.h>
 
 void print_d(int num)
 {

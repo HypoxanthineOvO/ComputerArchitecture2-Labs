@@ -6,6 +6,8 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+// Math functions
+#include <cmath>
 
 #include "Debug.h"
 #include "Simulator.h"
@@ -70,6 +72,10 @@ Simulator::Simulator(MemoryManager* memory, BranchPredictor* predictor) {
 	this->pc = 0;
 	for (int i = 0; i < REGNUM; ++i) {
 		this->reg[i] = 0;
+	}
+	// Floating point registers
+	for (int i = 0; i < FREGNUM; ++i) {
+		this->fpreg[i] = 0;
 	}
 }
 
@@ -690,7 +696,7 @@ void Simulator::decode() {
 			reg1 = rs1;
 			reg2 = rs2;
 			op1 = this->reg[rs1];
-			op2 = this->reg[rs2];
+			op2 = *(float*)&this->fpreg[rs2];
 			offset = imm_s;
 
 
@@ -712,8 +718,8 @@ void Simulator::decode() {
 			reg1 = rs1;
 			reg2 = rs2;
 			dest = rd;
-			op1 = this->reg[rs1];
-			op2 = this->reg[rs2];
+			op1 = *(float*)&this->fpreg[rs1];
+			op2 = *(float*)&this->fpreg[rs2];
 
 
 			if (funct7 == 0x00) {
@@ -735,6 +741,21 @@ void Simulator::decode() {
 				// FDIV.S
 				instname = "fdiv.s";
 				insttype = FDIV_S;
+			}
+			else if (funct7 == 0x2C) {
+				// FSQRT.S
+				instname = "fsqrt.s";
+				insttype = FSQRT_S;
+			}
+			else if (funct7 == 0x70) {
+				// FMV.X.W
+				instname = "fmv.x.w";
+				insttype = FMV_X_W;
+			}
+			else if (funct7 == 0x78) {
+				// FMV.W.X
+				instname = "fmv.w.x";
+				insttype = FMV_W_X;
 			}
 			else {
 				this->panic("Unknown funct7 0x%x for OP_FARITH\n", funct7);
@@ -834,6 +855,9 @@ void Simulator::excecute() {
 	bool readSignExt = false;
 	uint32_t memLen = 0;
 	bool branch = false;
+
+	// For FP instructions
+	float fop1 = 0, fop2 = 0, fout = 0;
 
 	switch (inst) {
 	case LUI:
@@ -1061,21 +1085,46 @@ void Simulator::excecute() {
 		break;
 	case FADD_S:
 		writeReg = true;
-		out = *(float*)&op1 + *(float*)&op2;
+		fop1 = *(float*)&op1;
+		fop2 = *(float*)&op2;
+		fout = fop1 + fop2;
+		out = *(int64_t*)&fout;
 		break;
 	case FSUB_S:
 		writeReg = true;
-		out = *(float*)&op1 - *(float*)&op2;
+		fop1 = *(float*)&op1;
+		fop2 = *(float*)&op2;
+		fout = fop1 - fop2;
+		out = *(int64_t*)&fout;
 		break;
 	case FMUL_S:
 		writeReg = true;
-		out = *(float*)&op1 * *(float*)&op2;
+		fop1 = *(float*)&op1;
+		fop2 = *(float*)&op2;
+		fout = fop1 * fop2;
+		out = *(int64_t*)&fout;
 		break;
 	case FDIV_S:
 		writeReg = true;
-		out = *(float*)&op1 / *(float*)&op2;
+		fop1 = *(float*)&op1;
+		fop2 = *(float*)&op2;
+		fout = fop1 / fop2;
+		out = *(int64_t*)&fout;
 		break;
-
+	case FSQRT_S:
+		writeReg = true;
+		fop1 = *(float*)&op1;
+		fout = sqrtf(fop1);
+		out = *(int64_t*)&fout;
+		break;
+	case FMV_X_W:
+		writeReg = true;
+		// TODO: Implement this
+		break;
+	case FMV_W_X:
+		writeReg = true;
+		// TODO: Implement this
+		break;
 	default:
 		this->panic("Unknown instruction type %d\n", inst);
 	}
@@ -1401,7 +1450,7 @@ int64_t Simulator::handleSystemCall(int64_t op1, int64_t op2) {
 		scanf(" %ld", &op1);
 		break;
 	case 6: // print float
-		printf("%f", (float)arg1);
+		printf("%f", *(float*)&op1);
 		break;
 	default:
 		this->panic("Unknown syscall type %d\n", type);

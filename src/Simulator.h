@@ -18,6 +18,7 @@
 namespace RISCV {
 
 	const int REGNUM = 32;
+	const int FREGNUM = 32;
 	extern const char* REGNAME[32];
 	typedef uint32_t RegId;
 	enum Reg {
@@ -126,6 +127,8 @@ namespace RISCV {
 		FMUL_S = 58,
 		FDIV_S = 59,
 		FSQRT_S = 60,
+		FMV_X_W = 61,
+		FMV_W_X = 62,
 		UNKNOWN = -1,
 	};
 	extern const char* INSTNAME[];
@@ -182,6 +185,8 @@ public:
 	uint64_t predictedPC; // for branch prediction module, predicted PC destination
 	uint64_t anotherPC; // // another possible prediction destination
 	uint64_t reg[RISCV::REGNUM];
+	// Floating point registers
+	float fpreg[RISCV::FREGNUM];
 	uint32_t stackBase;
 	uint32_t maximumStackSize;
 	MemoryManager* memory;
