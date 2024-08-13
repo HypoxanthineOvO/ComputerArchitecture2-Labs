@@ -1409,7 +1409,15 @@ void Simulator::writeBack() {
 		}
 
 		// Real Write Back
-		this->reg[this->mReg.destReg] = this->mReg.out;
+		// this->reg[this->mReg.destReg] = this->mReg.out;
+
+		// For FP instructions
+		if (isWriteToFPInst(this->mReg.inst)) {
+			this->fpreg[this->mReg.destReg] = this->mReg.out;
+		}
+		else {
+			this->reg[this->mReg.destReg] = this->mReg.out;
+		}
 	}
 
 	// this->pc = this->mReg.pc;

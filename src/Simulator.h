@@ -174,6 +174,14 @@ namespace RISCV {
 		return false;
 	}
 
+	inline bool isWriteToFPInst(Inst inst) {
+		if (inst == FADD_S || inst == FSUB_S || inst == FMUL_S || inst == FDIV_S ||
+			inst == FSQRT_S || inst == FMV_W_X) {
+			return true;
+		}
+		return false;
+	}
+
 } // namespace RISCV
 
 class Simulator {
