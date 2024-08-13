@@ -10,6 +10,8 @@
 #include "Debug.h"
 #include "Simulator.h"
 
+#include "Utils.h"
+
 namespace RISCV {
 
 	const char* REGNAME[32] = {
@@ -54,6 +56,8 @@ namespace RISCV {
 		"srli", "srai",  "add",   "sub",   "sll",   "slt",  "sltu", "xor",  "srl",
 		"sra",  "or",    "and",   "ecall", "addiw", "mul",  "mulh", "div",  "rem",
 		"lwu",  "slliw", "srliw", "sraiw", "addw",  "subw", "sllw", "srlw", "sraw",
+		// Add more instructions here
+		"flw",  "fsw",   "fadd.s", "fsub.s", "fmul.s", "fdiv.s"
 	};
 
 } // namespace RISCV
@@ -658,7 +662,92 @@ void Simulator::decode() {
 				this->panic("Unknown 32bit funct3 0x%x\n", funct3);
 			}
 		} break;
+		// Add more instructions here
+		case OP_FLOAD: {
+			reg1 = rs1;
+			dest = rd;
+			op1 = this->reg[rs1];
+			op2 = imm_i;
+			offset = imm_i;
+
+
+			// Load
+			if (funct3 == 0x02) {
+				instname = "flw";
+				insttype = FLW;
+			}
+			else {
+				this->panic("Unknown funct3 0x%x for OP_FLOAD\n", funct3);
+			}
+
+			op1str = REGNAME[rs1];
+			op2str = std::to_string(op2);
+			deststr = REGNAME[rd];
+			inststr = instname + " f" + deststr + "," + op2str + "(" + op1str + ")";
+			break;
+		}
+		case OP_FSTORE: {
+			reg1 = rs1;
+			reg2 = rs2;
+			op1 = this->reg[rs1];
+			op2 = this->reg[rs2];
+			offset = imm_s;
+
+
+			if (funct3 == 0x02) {
+				instname = "fsw";
+				insttype = FSW;
+			}
+			else {
+				this->panic("Unknown funct3 0x%x for OP_FSTORE\n", funct3);
+			}
+
+			op1str = REGNAME[rs1];
+			op2str = REGNAME[rs2];
+			offsetstr = std::to_string(offset);
+			inststr = instname + " f" + op2str + "," + offsetstr + "(" + op1str + ")";
+			break;
+		}
+		case OP_FARITH: {
+			reg1 = rs1;
+			reg2 = rs2;
+			dest = rd;
+			op1 = this->reg[rs1];
+			op2 = this->reg[rs2];
+
+
+			if (funct7 == 0x00) {
+				// FADD.S
+				instname = "fadd.s";
+				insttype = FADD_S;
+			}
+			else if (funct7 == 0x04) {
+				// FSUB.S
+				instname = "fsub.s";
+				insttype = FSUB_S;
+			}
+			else if (funct7 == 0x08) {
+				// FMUL.S
+				instname = "fmul.s";
+				insttype = FMUL_S;
+			}
+			else if (funct7 == 0x0C) {
+				// FDIV.S
+				instname = "fdiv.s";
+				insttype = FDIV_S;
+			}
+			else {
+				this->panic("Unknown funct7 0x%x for OP_FARITH\n", funct7);
+			}
+			
+			op1str = REGNAME[rs1];
+			op2str = REGNAME[rs2];
+			deststr = REGNAME[rd];
+			inststr = instname + " f" + deststr + ",f" + op1str + ",f" + op2str;
+
+		} break;
 		default:
+			utils::printInstruction(inst);
 			this->panic("Unsupported opcode 0x%x!\n", opcode);
 		}
 
@@ -705,6 +794,7 @@ void Simulator::decode() {
 	this->dRegNew.op1 = op1;
 	this->dRegNew.op2 = op2;
 	this->dRegNew.offset = offset;
+
 }
 
 void Simulator::excecute() {
@@ -957,6 +1047,35 @@ void Simulator::excecute() {
 		out = handleSystemCall(op1, op2);
 		writeReg = true;
 		break;
+	// Add more instructions here
+	case FLW:
+		readMem = true;
+		writeReg = true;
+		memLen = 4;
+		out = op1 + offset;
+		break;
+	case FSW:
+		writeMem = true;
+		memLen = 4;
+		out = op1 + offset;
+		break;
+	case FADD_S:
+		writeReg = true;
+		out = *(float*)&op1 + *(float*)&op2;
+		break;
+	case FSUB_S:
+		writeReg = true;
+		out = *(float*)&op1 - *(float*)&op2;
+		break;
+	case FMUL_S:
+		writeReg = true;
+		out = *(float*)&op1 * *(float*)&op2;
+		break;
+	case FDIV_S:
+		writeReg = true;
+		out = *(float*)&op1 / *(float*)&op2;
+		break;
+
 	default:
 		this->panic("Unknown instruction type %d\n", inst);
 	}

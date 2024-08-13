@@ -118,23 +118,35 @@ namespace RISCV {
 		SLLW = 51,
 		SRLW = 52,
 		SRAW = 53,
+		// Add new instructions here
+		FLW = 54,
+		FSW = 55,
+		FADD_S = 56,
+		FSUB_S = 57,
+		FMUL_S = 58,
+		FDIV_S = 59,
+		FSQRT_S = 60,
 		UNKNOWN = -1,
 	};
 	extern const char* INSTNAME[];
 
 	// Opcode field
-	const int OP_REG = 0x33;
-	const int OP_IMM = 0x13;
-	const int OP_LUI = 0x37;
-	const int OP_BRANCH = 0x63;
-	const int OP_STORE = 0x23;
-	const int OP_LOAD = 0x03;
-	const int OP_SYSTEM = 0x73;
+	const int OP_REG = 0x33; // 0110011, R-type
+	const int OP_IMM = 0x13; // 0010011, I-type
+	const int OP_LUI = 0x37; // 0110111, U-type
+	const int OP_BRANCH = 0x63; // 1100011, SB-type
+	const int OP_STORE = 0x23; // 0100011, S-type
+	const int OP_LOAD = 0x03; // 0000011, I-type
+	const int OP_SYSTEM = 0x73; 
 	const int OP_AUIPC = 0x17;
 	const int OP_JAL = 0x6F;
 	const int OP_JALR = 0x67;
 	const int OP_IMM32 = 0x1B;
 	const int OP_32 = 0x3B;
+	// Add more instructions here
+	const int OP_FLOAD = 0x07; // 0000111, FLW
+	const int OP_FSTORE = 0x27; // 0100111, FSW
+	const int OP_FARITH = 0x53; // 1010011, FADD_S, FSUB_S, FMUL_S, FDIV_S, FSQRT_S
 
 	inline bool isBranch(Inst inst) {
 		if (inst == BEQ || inst == BNE || inst == BLT || inst == BGE ||
@@ -197,7 +209,7 @@ private:
 		uint64_t pc;
 		uint32_t inst;
 		uint32_t len;
-	} fReg, fRegNew;
+	} fReg, fRegNew; // Instruction Fetch Register
 	struct DReg {
 		// Control Signals
 		bool bubble;
@@ -211,7 +223,7 @@ private:
 		RISCV::RegId dest;
 		int64_t offset;
 		bool predictedBranch;
-	} dReg, dRegNew;
+	} dReg, dRegNew; // Instruction Decode Register
 	struct EReg {
 		// Control Signals
 		bool bubble;
@@ -229,7 +241,7 @@ private:
 		bool readSignExt;
 		uint32_t memLen;
 		bool branch;
-	} eReg, eRegNew;
+	} eReg, eRegNew; // Execute Register
 	struct MReg {
 		// Control Signals
 		bool bubble;
@@ -242,7 +254,7 @@ private:
 		int64_t out;
 		bool writeReg;
 		RISCV::RegId destReg;
-	} mReg, mRegNew;
+	} mReg, mRegNew; // Memory Access Register
 
 	// Pipeline Related Variables
 	// To avoid older values(in MEM) overriding newer values(in EX)
@@ -304,15 +316,21 @@ private:
 			case SLLI: case SLL: case SLLIW: case SLLW:
 			case SRLI: case SRL: case SRLIW: case SRLW:
 			case SRAI: case SRA: case SRAW:  case SRAIW:
+			// Add new instructions here
+			case FADD_S: case FSUB_S:
 				return ALU; break;
 				/* When using the instructions below,
 				   ALU for memory address calculation is used */
 			case SB:   case SH:  case SW:    case SD:
+			// Add new instructions here
+			case FSW:
 				return memCalc; break;
 				/* When using the instructions below,
 				   datamem is used */
 			case LB:   case LH:  case LW:    case LD:
 			case LBU:  case LHU: case LWU:
+			// Add new instructions here
+			case FLW:
 				return dataMem; break;
 				/* When using the instructions below,
 				   ALU for branch offset calculation is used */
@@ -323,10 +341,14 @@ private:
 				/* When using the instructions below,
 				   integer multiplier is used */
 			case MUL:
+			// Add new instructions here	
+			case FMUL_S:
 				return iMul; break;
 				/* When using the instructions below,
 				   integer divider is used */
 			case DIV:
+			// Add new instructions here
+			case FDIV_S:
 				return iDiv; break;
 				// YOUR CODE HERE
 				// case INST:
